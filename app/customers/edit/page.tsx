@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,23 +11,39 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
 
-// モック顧客データ（実際の実装では、IDに基づいてAPIから取得）
-const mockCustomer = {
+// モック顧客データの初期値
+const initialCustomer = {
   id: 1,
-  name: "田中 太郎",
-  email: "tanaka@example.com",
-  phone: "090-1234-5678",
-  company: "株式会社サンプル",
-  position: "営業部長",
-  address: "東京都渋谷区渋谷1-1-1",
+  name: "",
+  email: "",
+  phone: "",
+  company: "",
+  position: "",
+  address: "",
   status: "アクティブ",
-  notes: "重要な顧客です。定期的にフォローアップが必要。"
+  notes: ""
 }
 
-export default function CustomerEditPage({ params }: { params: { id: string } }) {
+function CustomerEditForm() {
   const router = useRouter()
-  const [customer, setCustomer] = useState(mockCustomer)
+  const searchParams = useSearchParams()
+  const [customer, setCustomer] = useState(initialCustomer)
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    const customerId = searchParams.get('id')
+    if (customerId) {
+      // ローカルストレージから顧客データを取得
+      const savedCustomers = localStorage.getItem('customers')
+      if (savedCustomers) {
+        const customers = JSON.parse(savedCustomers)
+        const foundCustomer = customers.find((c: any) => c.id === parseInt(customerId))
+        if (foundCustomer) {
+          setCustomer(foundCustomer)
+        }
+      }
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -195,5 +211,13 @@ export default function CustomerEditPage({ params }: { params: { id: string } })
         </div>
       </form>
     </div>
+  )
+}
+
+export default function CustomerEditPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CustomerEditForm />
+    </Suspense>
   )
 }

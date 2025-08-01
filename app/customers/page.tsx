@@ -200,7 +200,7 @@ export default function CustomersPage() {
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end space-x-2">
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/customers/${customer.id}/edit`}>
+                        <Link href={`/customers/edit?id=${customer.id}`}>
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
