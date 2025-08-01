@@ -27,12 +27,13 @@ export default function Sidebar() {
       <nav className="flex-1 px-4 py-6 space-y-2">
         {navigation.map((item) => {
           const Icon = item.icon
+          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
           return (
             <Button
               key={item.name}
               asChild
-              variant={pathname === item.href ? "default" : "ghost"}
-              className={cn("w-full justify-start", pathname === item.href && "bg-blue-100 text-blue-700")}
+              variant={isActive ? "default" : "ghost"}
+              className={cn("w-full justify-start", isActive && "bg-blue-100 text-blue-700")}
             >
               <Link href={item.href}>
                 <Icon className="mr-2 h-4 w-4" />
