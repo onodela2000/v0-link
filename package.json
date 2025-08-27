@@ -7,9 +7,9 @@
     "dev": "concurrently \"npm run mock\" \"next dev\"",
     "dev:frontend": "next dev",
     "generate-api": "openapi-generator-cli generate -i api-spec.yaml -g typescript-fetch -o src/api --additional-properties=typescriptThreePlus=true,supportsES6=true,npmName=@/api,withoutRuntimeChecks=true",
+    "postinstall": "npm run generate-api",
     "lint": "next lint",
     "mock": "prism mock api-spec.yaml --port 4010",
-    "postinstall": "npm run generate-api",
     "start": "next start"
   },
   "dependencies": {

@@ -1,26 +1,24 @@
 // APIクライアント設定とヘルパー関数
-import { Configuration, DefaultApi } from '../src/api/src/index'
+import { Configuration, DefaultApi } from "../src/api/src/index"
 
-// APIクライアントの設定
+// API設定
 const configuration = new Configuration({
-  basePath: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4010',
+  basePath: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4010",
+  headers: {
+    "Content-Type": "application/json",
+  },
 })
 
-// APIクライアントインスタンス
+// APIクライアントのインスタンス
 export const apiClient = new DefaultApi(configuration)
 
-// エラーハンドリング付きのAPI呼び出しラッパー
-export async function withErrorHandling<T>(
-  apiCall: () => Promise<T>
-): Promise<{ data?: T; error?: string }> {
+// エラーハンドリング用のラッパー関数
+export async function withErrorHandling<T>(apiCall: () => Promise<T>): Promise<T | null> {
   try {
-    const data = await apiCall()
-    return { data }
+    return await apiCall()
   } catch (error) {
-    console.error('API call failed:', error)
-    return { 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
-    }
+    console.error("API Error:", error)
+    return null
   }
 }
 
@@ -32,17 +30,13 @@ export const dashboardApi = {
   },
 
   // 売上チャートデータ取得
-  async getSalesChart(period: 'months' | 'weeks' | 'days' = 'months', limit = 12) {
-    return withErrorHandling(() => 
-      apiClient.getSalesChart({ period, limit })
-    )
+  async getSalesChart(period: "months" | "weeks" | "days" = "months", limit = 12) {
+    return withErrorHandling(() => apiClient.getSalesChart({ period, limit }))
   },
 
   // 最近の売上データ取得
   async getRecentSales(limit = 5) {
-    return withErrorHandling(() => 
-      apiClient.getRecentSales({ limit })
-    )
+    return withErrorHandling(() => apiClient.getRecentSales({ limit }))
   },
 }
 
@@ -52,12 +46,10 @@ export const salesApi = {
   async getSales(options?: {
     limit?: number
     offset?: number
-    sortBy?: 'createdAt' | 'amount' | 'customer'
-    sortOrder?: 'asc' | 'desc'
+    sortBy?: "createdAt" | "amount" | "customer"
+    sortOrder?: "asc" | "desc"
   }) {
-    return withErrorHandling(() => 
-      apiClient.getSales(options)
-    )
+    return withErrorHandling(() => apiClient.getSales(options))
   },
 
   // 売上データ作成
@@ -68,9 +60,7 @@ export const salesApi = {
     productName: string
     description?: string
   }) {
-    return withErrorHandling(() => 
-      apiClient.createSale({ createSaleRequest: saleData })
-    )
+    return withErrorHandling(() => apiClient.createSale({ createSaleRequest: saleData }))
   },
 }
 
@@ -82,9 +72,7 @@ export const customersApi = {
     offset?: number
     search?: string
   }) {
-    return withErrorHandling(() => 
-      apiClient.getCustomers(options)
-    )
+    return withErrorHandling(() => apiClient.getCustomers(options))
   },
 
   // 顧客データ作成
@@ -94,8 +82,6 @@ export const customersApi = {
     phone?: string
     address?: string
   }) {
-    return withErrorHandling(() => 
-      apiClient.createCustomer({ createCustomerRequest: customerData })
-    )
+    return withErrorHandling(() => apiClient.createCustomer({ createCustomerRequest: customerData }))
   },
 }

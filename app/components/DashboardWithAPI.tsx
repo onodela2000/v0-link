@@ -1,33 +1,28 @@
-'use client'
+"use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
-import Link from "next/link"
-import { TrendingUp, DollarSign, ShoppingCart, Users, RefreshCw, AlertTriangle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { RefreshCw, DollarSign, ShoppingCart, Users, TrendingUp, AlertCircle } from "lucide-react"
 import { useDashboardData } from "@/hooks/use-dashboard-data"
-import SalesChartWithAPI from "./SalesChartWithAPI"
-import RecentSalesWithAPI from "./RecentSalesWithAPI"
+import { SalesChartWithAPI } from "./SalesChartWithAPI"
+import { RecentSalesWithAPI } from "./RecentSalesWithAPI"
 
-export default function DashboardWithAPI() {
-  const { stats, loading, error, refetch } = useDashboardData()
+export function DashboardWithAPI() {
+  const { stats, recentSales, chartData, loading, error, refetch } = useDashboardData()
 
   if (error) {
     return (
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">売上管理ダッシュボード</h2>
-          <Button onClick={refetch} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            再読み込み
-          </Button>
-        </div>
-        
+      <div className="space-y-4">
         <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            データの読み込み中にエラーが発生しました: {error}
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            {error}
+            <Button variant="outline" size="sm" onClick={refetch}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              再試行
+            </Button>
           </AlertDescription>
         </Alert>
       </div>
@@ -35,22 +30,17 @@ export default function DashboardWithAPI() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">売上管理ダッシュボード</h2>
-        <div className="flex items-center space-x-2">
-          <Button onClick={refetch} variant="outline" size="sm" disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            更新
-          </Button>
-          <Button asChild>
-            <Link href="/sales/new">新規売上登録</Link>
-          </Button>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold tracking-tight">ダッシュボード</h2>
+        <Button variant="outline" size="sm" onClick={refetch} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          更新
+        </Button>
       </div>
 
+      {/* 統計カード */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* 総売上カード */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">総売上</CardTitle>
@@ -58,21 +48,18 @@ export default function DashboardWithAPI() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <Skeleton className="h-7 w-24 mb-1" />
+              <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">¥{stats?.totalRevenue?.toLocaleString() || '0'}</div>
+              <div className="text-2xl font-bold">¥{stats?.totalRevenue?.toLocaleString() || "0"}</div>
             )}
             {loading ? (
               <Skeleton className="h-4 w-20" />
             ) : (
-              <p className="text-xs text-muted-foreground">
-                前月比 +{stats?.growthRate || 0}%
-              </p>
+              <p className="text-xs text-muted-foreground">前月比 +{stats?.growthRate || 0}%</p>
             )}
           </CardContent>
         </Card>
 
-        {/* 売上件数カード */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">売上件数</CardTitle>
@@ -80,21 +67,20 @@ export default function DashboardWithAPI() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <Skeleton className="h-7 w-20 mb-1" />
+              <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold">{stats?.salesCount?.toLocaleString() || '0'}</div>
+              <div className="text-2xl font-bold">{stats?.salesCount?.toLocaleString() || 0}</div>
             )}
             {loading ? (
               <Skeleton className="h-4 w-16" />
             ) : (
               <p className="text-xs text-muted-foreground">
-                前月比 +{((stats?.salesCount || 0) - (stats?.previousMonthSalesCount || 0))}件
+                前月比 +{(stats?.salesCount || 0) - (stats?.previousMonthSalesCount || 0)}件
               </p>
             )}
           </CardContent>
         </Card>
 
-        {/* 顧客数カード */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">顧客数</CardTitle>
@@ -102,21 +88,20 @@ export default function DashboardWithAPI() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <Skeleton className="h-7 w-20 mb-1" />
+              <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold">{stats?.customerCount?.toLocaleString() || '0'}</div>
+              <div className="text-2xl font-bold">{stats?.customerCount?.toLocaleString() || 0}</div>
             )}
             {loading ? (
               <Skeleton className="h-4 w-16" />
             ) : (
               <p className="text-xs text-muted-foreground">
-                前月比 +{Math.round(((stats?.customerCount || 0) - (stats?.previousMonthCustomerCount || 0)) / (stats?.previousMonthCustomerCount || 1) * 100)}%
+                前月比 +{(stats?.customerCount || 0) - (stats?.previousMonthCustomerCount || 0)}人
               </p>
             )}
           </CardContent>
         </Card>
 
-        {/* 成長率カード */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">成長率</CardTitle>
@@ -124,36 +109,33 @@ export default function DashboardWithAPI() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <Skeleton className="h-7 w-16 mb-1" />
+              <Skeleton className="h-8 w-16" />
             ) : (
               <div className="text-2xl font-bold">+{stats?.growthRate || 0}%</div>
             )}
-            {loading ? (
-              <Skeleton className="h-4 w-12" />
-            ) : (
-              <p className="text-xs text-muted-foreground">前年同期比</p>
-            )}
+            {loading ? <Skeleton className="h-4 w-12" /> : <p className="text-xs text-muted-foreground">前月比</p>}
           </CardContent>
         </Card>
       </div>
 
+      {/* チャートと最近の売上 */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>売上推移</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <SalesChartWithAPI />
+            <SalesChartWithAPI data={chartData} loading={loading} />
           </CardContent>
         </Card>
 
         <Card className="col-span-3">
           <CardHeader>
             <CardTitle>最近の売上</CardTitle>
-            <CardDescription>今日の売上データ</CardDescription>
+            <CardDescription>直近の売上データを表示しています</CardDescription>
           </CardHeader>
           <CardContent>
-            <RecentSalesWithAPI />
+            <RecentSalesWithAPI data={recentSales} loading={loading} />
           </CardContent>
         </Card>
       </div>

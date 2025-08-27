@@ -42,7 +42,7 @@
 
 ## アーキテクチャ
 
-```mermaid
+\`\`\`mermaid
 graph TD
     A[👨‍💻 v0.dev] -->|自動同期| B[📦 GitHub Repository]
     B -->|ローカル編集| C[💻 Local Development]
@@ -59,7 +59,7 @@ graph TD
     style D fill:#ea580c
     style E fill:#7c3aed
     style F fill:#0891b2
-```
+\`\`\`
 
 ### 開発・配信フロー
 
@@ -73,9 +73,9 @@ graph TD
 - TypeScript、shadcn/uiでリッチな機能実装
 
 #### 3️⃣ Static Export ビルド
-```bash
+\`\`\`bash
 npm run build  # out/ディレクトリに静的ファイル生成
-```
+\`\`\`
 
 #### 4️⃣ 静的ホスティング配信
 - **Amazon S3** + CloudFront
@@ -93,7 +93,7 @@ npm run build  # out/ディレクトリに静的ファイル生成
 
 ## ローカル開発
 
-```bash
+\`\`\`bash
 # 依存関係のインストール
 npm install
 
@@ -105,6 +105,6 @@ npm run build
 
 # 本番サーバーの起動
 npm run start
-```
+\`\`\`
 
 プロジェクトは [http://localhost:3000](http://localhost:3000) で確認できます。

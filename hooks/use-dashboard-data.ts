@@ -1,71 +1,54 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { dashboardApi } from '@/lib/api-client'
-import { DashboardStats, GetSalesChart200Response, GetRecentSales200Response } from '../src/api/src/index'
+import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/simple-api-client"
+import type { DashboardStats, Sale, SalesChartData } from "@/lib/api-types"
 
-interface UseDashboardDataReturn {
-  stats: DashboardStats | null
-  chartData: GetSalesChart200Response | null
-  recentSales: GetRecentSales200Response | null
-  loading: boolean
-  error: string | null
-  refetch: () => void
-}
-
-export function useDashboardData(): UseDashboardDataReturn {
+export function useDashboardData() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [chartData, setChartData] = useState<GetSalesChart200Response | null>(null)
-  const [recentSales, setRecentSales] = useState<GetRecentSales200Response | null>(null)
+  const [recentSales, setRecentSales] = useState<Sale[]>([])
+  const [chartData, setChartData] = useState<SalesChartData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchData = async () => {
+  const fetchDashboardData = async () => {
     setLoading(true)
     setError(null)
 
     try {
-      // 並列でデータを取得
-      const [statsResult, chartResult, recentSalesResult] = await Promise.all([
-        dashboardApi.getStats(),
-        dashboardApi.getSalesChart(),
-        dashboardApi.getRecentSales(),
+      // 並列でデータを取得（各APIは内部でフォールバックを処理）
+      const [statsResult, recentSalesResult, chartResult] = await Promise.all([
+        apiClient.getDashboardStats(),
+        apiClient.getRecentSales(5),
+        apiClient.getSalesChart("months", 6),
       ])
 
-      // エラーチェック
-      if (statsResult.error) {
-        throw new Error(`Stats error: ${statsResult.error}`)
-      }
-      if (chartResult.error) {
-        throw new Error(`Chart error: ${chartResult.error}`)
-      }
-      if (recentSalesResult.error) {
-        throw new Error(`Recent sales error: ${recentSalesResult.error}`)
-      }
-
-      // データ設定
-      setStats(statsResult.data || null)
-      setChartData(chartResult.data || null)
-      setRecentSales(recentSalesResult.data || null)
+      setStats(statsResult)
+      setRecentSales(recentSalesResult.data)
+      setChartData(chartResult.data)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'データの取得に失敗しました'
-      setError(errorMessage)
-      console.error('Dashboard data fetch error:', err)
+      // この時点でエラーが発生することは稀（各APIが内部でフォールバック処理するため）
+      setError("データの取得中に予期しないエラーが発生しました")
+      console.error("Dashboard data fetch error:", err)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchData()
+    fetchDashboardData()
   }, [])
+
+  const refetch = async () => {
+    await fetchDashboardData()
+  }
 
   return {
     stats,
-    chartData,
     recentSales,
+    chartData,
     loading,
     error,
-    refetch: fetchData,
+    refetch,
   }
 }

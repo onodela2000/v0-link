@@ -1,74 +1,66 @@
-'use client'
+"use client"
 
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useDashboardData } from "@/hooks/use-dashboard-data"
+import type { SalesChartData } from "@/lib/api-types"
 
-export default function SalesChartWithAPI() {
-  const { chartData, loading, error } = useDashboardData()
+interface SalesChartWithAPIProps {
+  data: SalesChartData[]
+  loading: boolean
+}
 
+export function SalesChartWithAPI({ data, loading }: SalesChartWithAPIProps) {
   if (loading) {
     return (
       <div className="space-y-2">
-        <Skeleton className="h-[350px] w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-[200px] w-full" />
       </div>
     )
   }
 
-  if (error || !chartData?.data) {
-    return (
-      <div className="h-[350px] flex items-center justify-center text-muted-foreground">
-        チャートデータの読み込みに失敗しました
-      </div>
-    )
+  if (!data || data.length === 0) {
+    return <div className="flex items-center justify-center h-[200px] text-muted-foreground">データがありません</div>
   }
 
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <LineChart data={chartData.data}>
-        <XAxis 
-          dataKey="name" 
-          stroke="#888888" 
-          fontSize={12} 
-          tickLine={false} 
-          axisLine={false} 
-        />
-        <YAxis
-          stroke="#888888"
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => `¥${value.toLocaleString()}`}
-        />
-        <Tooltip 
-          formatter={(value, name) => {
-            if (name === 'sales') {
-              return [`${value}件`, "売上件数"]
-            }
-            if (name === 'revenue') {
-              return [`¥${(value as number).toLocaleString()}`, "売上金額"]
-            }
-            return [value, name]
-          }}
-          labelStyle={{ color: "#000" }}
-        />
-        <Line 
-          type="monotone" 
-          dataKey="sales" 
-          stroke="#2563eb" 
-          strokeWidth={2} 
-          dot={{ fill: "#2563eb" }}
-          name="sales"
-        />
-        <Line 
-          type="monotone" 
-          dataKey="revenue" 
-          stroke="#10b981" 
-          strokeWidth={2} 
-          dot={{ fill: "#10b981" }}
-          name="revenue"
-        />
-      </LineChart>
-    </ResponsiveContainer>
+    <ChartContainer
+      config={{
+        revenue: {
+          label: "売上金額",
+          color: "hsl(var(--chart-1))",
+        },
+        sales: {
+          label: "売上件数",
+          color: "hsl(var(--chart-2))",
+        },
+      }}
+      className="h-[200px]"
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+          <YAxis
+            stroke="#888888"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `¥${value.toLocaleString()}`}
+          />
+          <ChartTooltip
+            content={({ active, payload, label }) => {
+              if (active && payload && payload.length) {
+                return <ChartTooltipContent active={active} payload={payload} label={label} />
+              }
+              return null
+            }}
+          />
+          <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartContainer>
   )
 }
