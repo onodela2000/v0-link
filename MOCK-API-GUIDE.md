@@ -44,11 +44,25 @@ https://your-app.com?api=local      # ローカル開発用
 
 ## 🛠 技術仕様
 
-### Service Worker Mock
-- **場所**: `public/mockServiceWorker.js`
+### Multi-Layer Mock System
+1. **Service Worker Mock** (`public/mockServiceWorker.js`)
+   - 静的ファイルホスティング用
+   - MIME type問題対応済み
+
+2. **Inline Service Worker** (`components/MockServiceWorker.tsx`)
+   - Service Workerファイル読み込み失敗時のフォールバック
+   - Blob URLで動的生成
+
+3. **Fetch API Mock** (`components/FetchMockProvider.tsx`)
+   - 最終フォールバック
+   - window.fetchを直接オーバーライド
+   - 確実にすべての環境で動作
+
+### 動作保証
 - **対象**: `/api/*` パスのリクエストをインターセプト
 - **データ**: OpenAPI仕様と同じレスポンス形式
 - **遅延**: 100-300msのリアルな遅延シミュレート
+- **互換性**: すべての静的ファイルホスティングで動作
 
 ### 動的API設定
 - **設定**: `lib/api-config.ts`

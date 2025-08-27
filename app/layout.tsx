@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import Sidebar from "./components/Sidebar"
 import MockServiceWorker from "@/components/MockServiceWorker"
+import FetchMockProvider from "@/components/FetchMockProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
+        <FetchMockProvider />
         <div className="flex h-screen bg-gray-100">
           <Sidebar />
           <main className="flex-1 overflow-y-auto">{children}</main>
