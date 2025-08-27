@@ -1,13 +1,20 @@
 // APIクライアント設定とヘルパー関数
 import { Configuration, DefaultApi } from '../src/api/src/index'
+import { getApiConfig } from './api-config'
 
-// APIクライアントの設定
-const configuration = new Configuration({
-  basePath: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4010',
-})
+// 動的にAPIクライアント設定を取得
+function getApiClient() {
+  const config = getApiConfig()
+  const configuration = new Configuration({
+    basePath: config.baseUrl || window?.location.origin || '',
+  })
+  return new DefaultApi(configuration)
+}
 
-// APIクライアントインスタンス
-export const apiClient = new DefaultApi(configuration)
+// APIクライアントインスタンス（動的取得用）
+export function getApiClientInstance() {
+  return getApiClient()
+}
 
 // エラーハンドリング付きのAPI呼び出しラッパー
 export async function withErrorHandling<T>(
@@ -28,20 +35,23 @@ export async function withErrorHandling<T>(
 export const dashboardApi = {
   // ダッシュボード統計データ取得
   async getStats() {
-    return withErrorHandling(() => apiClient.getDashboardStats())
+    const client = getApiClientInstance()
+    return withErrorHandling(() => client.getDashboardStats())
   },
 
   // 売上チャートデータ取得
   async getSalesChart(period: 'months' | 'weeks' | 'days' = 'months', limit = 12) {
+    const client = getApiClientInstance()
     return withErrorHandling(() => 
-      apiClient.getSalesChart({ period, limit })
+      client.getSalesChart({ period, limit })
     )
   },
 
   // 最近の売上データ取得
   async getRecentSales(limit = 5) {
+    const client = getApiClientInstance()
     return withErrorHandling(() => 
-      apiClient.getRecentSales({ limit })
+      client.getRecentSales({ limit })
     )
   },
 }
@@ -55,8 +65,9 @@ export const salesApi = {
     sortBy?: 'createdAt' | 'amount' | 'customer'
     sortOrder?: 'asc' | 'desc'
   }) {
+    const client = getApiClientInstance()
     return withErrorHandling(() => 
-      apiClient.getSales(options)
+      client.getSales(options)
     )
   },
 
@@ -68,8 +79,9 @@ export const salesApi = {
     productName: string
     description?: string
   }) {
+    const client = getApiClientInstance()
     return withErrorHandling(() => 
-      apiClient.createSale({ createSaleRequest: saleData })
+      client.createSale({ createSaleRequest: saleData })
     )
   },
 }
@@ -82,8 +94,9 @@ export const customersApi = {
     offset?: number
     search?: string
   }) {
+    const client = getApiClientInstance()
     return withErrorHandling(() => 
-      apiClient.getCustomers(options)
+      client.getCustomers(options)
     )
   },
 
@@ -94,8 +107,9 @@ export const customersApi = {
     phone?: string
     address?: string
   }) {
+    const client = getApiClientInstance()
     return withErrorHandling(() => 
-      apiClient.createCustomer({ createCustomerRequest: customerData })
+      client.createCustomer({ createCustomerRequest: customerData })
     )
   },
 }

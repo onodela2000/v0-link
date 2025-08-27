@@ -96,7 +96,7 @@ paths:
                         sales: 5500
                         revenue: 550000
                       - name: "7月"
-                        sales: 9000
+                        sales: 10000
                         revenue: 700000
                       - name: "8月"
                         sales: 6500
