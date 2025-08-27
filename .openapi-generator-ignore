@@ -1,0 +1,18 @@
+# OpenAPI Generator無視リスト
+
+# Git関連ファイル
+.gitignore
+.git_push
+git_push.sh
+
+# ドキュメントファイル
+README.md
+docs/
+
+# 設定ファイル
+.openapi-generator/
+.openapi-generator-ignore
+
+# テストファイル（必要に応じてコメントアウト）
+*.test.ts
+*.spec.ts

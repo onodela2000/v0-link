@@ -1,0 +1,591 @@
+openapi: 3.0.3
+info:
+  title: 売上管理システムAPI
+  description: 売上データとダッシュボード情報を管理するモックAPI
+  version: 1.0.0
+servers:
+  - url: http://localhost:4010
+    description: モックサーバー
+
+paths:
+  /dashboard/stats:
+    get:
+      summary: ダッシュボード統計データ取得
+      description: ダッシュボードに表示する総売上、売上件数、顧客数などの統計情報を取得します
+      operationId: getDashboardStats
+      responses:
+        '200':
+          description: ダッシュボード統計データの取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+              examples:
+                success:
+                  value:
+                    totalRevenue: 45231.89
+                    salesCount: 2350
+                    customerCount: 1234
+                    growthRate: 20.1
+                    previousMonthRevenue: 37693.24
+                    previousMonthSalesCount: 2170
+                    previousMonthCustomerCount: 1037
+
+  /dashboard/sales-chart:
+    get:
+      summary: 売上チャートデータ取得
+      description: 月別の売上推移データを取得します
+      operationId: getSalesChart
+      parameters:
+        - name: period
+          in: query
+          description: "データ取得期間（months: 月別、weeks: 週別、days: 日別）"
+          required: false
+          schema:
+            type: string
+            enum:
+              - "months"
+              - "weeks" 
+              - "days"
+            default: "months"
+        - name: limit
+          in: query
+          description: 取得するデータポイント数
+          required: false
+          schema:
+            type: integer
+            default: 12
+            minimum: 1
+            maximum: 52
+      responses:
+        '200':
+          description: 売上チャートデータの取得に成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  period:
+                    type: string
+                    description: データ期間
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SalesChartData'
+              examples:
+                monthly_data:
+                  value:
+                    period: "months"
+                    data:
+                      - name: "1月"
+                        sales: 4000
+                        revenue: 400000
+                      - name: "2月"
+                        sales: 3000
+                        revenue: 300000
+                      - name: "3月"
+                        sales: 5000
+                        revenue: 500000
+                      - name: "4月"
+                        sales: 4500
+                        revenue: 450000
+                      - name: "5月"
+                        sales: 6000
+                        revenue: 600000
+                      - name: "6月"
+                        sales: 5500
+                        revenue: 550000
+                      - name: "7月"
+                        sales: 7000
+                        revenue: 700000
+                      - name: "8月"
+                        sales: 6500
+                        revenue: 650000
+                      - name: "9月"
+                        sales: 8000
+                        revenue: 800000
+                      - name: "10月"
+                        sales: 7500
+                        revenue: 750000
+                      - name: "11月"
+                        sales: 9000
+                        revenue: 900000
+                      - name: "12月"
+                        sales: 8500
+                        revenue: 850000
+
+  /dashboard/recent-sales:
+    get:
+      summary: 最近の売上一覧取得
+      description: 最近の売上データ一覧を取得します
+      operationId: getRecentSales
+      parameters:
+        - name: limit
+          in: query
+          description: 取得する売上データ数
+          required: false
+          schema:
+            type: integer
+            default: 5
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: 最近の売上データの取得に成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sales:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RecentSale'
+                  total:
+                    type: integer
+                    description: 総売上件数
+              examples:
+                success:
+                  value:
+                    sales:
+                      - id: 1
+                        customer: "田中太郎"
+                        email: "tanaka@example.com"
+                        amount: 1999
+                        productName: "商品A"
+                        createdAt: "2024-01-18T10:30:00Z"
+                      - id: 2
+                        customer: "佐藤花子"
+                        email: "sato@example.com"
+                        amount: 39000
+                        productName: "商品B"
+                        createdAt: "2024-01-18T09:15:00Z"
+                      - id: 3
+                        customer: "鈴木一郎"
+                        email: "suzuki@example.com"
+                        amount: 299
+                        productName: "商品C"
+                        createdAt: "2024-01-18T08:45:00Z"
+                      - id: 4
+                        customer: "高橋美咲"
+                        email: "takahashi@example.com"
+                        amount: 99000
+                        productName: "商品D"
+                        createdAt: "2024-01-17T16:20:00Z"
+                      - id: 5
+                        customer: "山田次郎"
+                        email: "yamada@example.com"
+                        amount: 39000
+                        productName: "商品E"
+                        createdAt: "2024-01-17T14:10:00Z"
+                    total: 2350
+
+  /sales:
+    get:
+      summary: 売上一覧取得
+      description: 売上データの一覧を取得します
+      operationId: getSales
+      parameters:
+        - name: limit
+          in: query
+          description: 取得する売上データ数
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: スキップする売上データ数
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: sortBy
+          in: query
+          description: ソート項目
+          required: false
+          schema:
+            type: string
+            enum:
+              - "createdAt"
+              - "amount"
+              - "customer"
+            default: "createdAt"
+        - name: sortOrder
+          in: query
+          description: ソート順
+          required: false
+          schema:
+            type: string
+            enum:
+              - "asc"
+              - "desc"
+            default: "desc"
+      responses:
+        '200':
+          description: 売上データ一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sales:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Sale'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+    post:
+      summary: 売上データ作成
+      description: 新しい売上データを作成します
+      operationId: createSale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customer
+                - email
+                - amount
+                - productName
+              properties:
+                customer:
+                  type: string
+                  description: 顧客名
+                  minLength: 1
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+                  description: 顧客メールアドレス
+                amount:
+                  type: number
+                  description: 売上金額
+                  minimum: 0
+                productName:
+                  type: string
+                  description: 商品名
+                  minLength: 1
+                  maxLength: 200
+                description:
+                  type: string
+                  description: 売上詳細
+                  maxLength: 500
+            examples:
+              new_sale:
+                value:
+                  customer: "新規太郎"
+                  email: "shinki@example.com"
+                  amount: 15000
+                  productName: "新商品A"
+                  description: "新商品の初回購入"
+      responses:
+        '201':
+          description: 売上データの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+
+  /customers:
+    get:
+      summary: 顧客一覧取得
+      description: 顧客データの一覧を取得します
+      operationId: getCustomers
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: search
+          in: query
+          description: 顧客名またはメールアドレスで検索
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 顧客データ一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Customer'
+                  total:
+                    type: integer
+
+    post:
+      summary: 顧客データ作成
+      description: 新しい顧客データを作成します
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+                address:
+                  type: string
+                  maxLength: 500
+      responses:
+        '201':
+          description: 顧客データの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+
+components:
+  schemas:
+    DashboardStats:
+      type: object
+      required:
+        - totalRevenue
+        - salesCount
+        - customerCount
+        - growthRate
+      properties:
+        totalRevenue:
+          type: number
+          description: 総売上金額
+          example: 45231.89
+        salesCount:
+          type: integer
+          description: 総売上件数
+          example: 2350
+        customerCount:
+          type: integer
+          description: 総顧客数
+          example: 1234
+        growthRate:
+          type: number
+          description: "成長率（%）"
+          example: 20.1
+        previousMonthRevenue:
+          type: number
+          description: 前月の売上金額
+          example: 37693.24
+        previousMonthSalesCount:
+          type: integer
+          description: 前月の売上件数
+          example: 2170
+        previousMonthCustomerCount:
+          type: integer
+          description: 前月の顧客数
+          example: 1037
+
+    SalesChartData:
+      type: object
+      required:
+        - name
+        - sales
+        - revenue
+      properties:
+        name:
+          type: string
+          description: "期間名（月名、週名、日付など）"
+          example: "1月"
+        sales:
+          type: integer
+          description: 売上件数
+          example: 4000
+        revenue:
+          type: number
+          description: 売上金額
+          example: 400000
+
+    RecentSale:
+      type: object
+      required:
+        - id
+        - customer
+        - email
+        - amount
+        - productName
+        - createdAt
+      properties:
+        id:
+          type: integer
+          description: 売上ID
+          example: 1
+        customer:
+          type: string
+          description: 顧客名
+          example: "田中太郎"
+        email:
+          type: string
+          format: email
+          description: 顧客メールアドレス
+          example: "tanaka@example.com"
+        amount:
+          type: number
+          description: 売上金額
+          example: 1999
+        productName:
+          type: string
+          description: 商品名
+          example: "商品A"
+        createdAt:
+          type: string
+          format: date-time
+          description: 売上作成日時
+          example: "2024-01-18T10:30:00Z"
+
+    Sale:
+      type: object
+      required:
+        - id
+        - customer
+        - email
+        - amount
+        - productName
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          description: 売上ID
+          example: 1
+        customer:
+          type: string
+          description: 顧客名
+          example: "田中太郎"
+        email:
+          type: string
+          format: email
+          description: 顧客メールアドレス
+          example: "tanaka@example.com"
+        amount:
+          type: number
+          description: 売上金額
+          minimum: 0
+          example: 1999
+        productName:
+          type: string
+          description: 商品名
+          example: "商品A"
+        description:
+          type: string
+          description: 売上詳細
+          example: "商品購入"
+        createdAt:
+          type: string
+          format: date-time
+          description: 売上作成日時
+          example: "2024-01-18T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: 売上最終更新日時
+          example: "2024-01-18T10:30:00Z"
+
+    Customer:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          description: 顧客ID
+          example: 1
+        name:
+          type: string
+          description: 顧客名
+          example: "田中太郎"
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+          example: "tanaka@example.com"
+        phone:
+          type: string
+          description: 電話番号
+          example: "090-1234-5678"
+        address:
+          type: string
+          description: 住所
+          example: "東京都渋谷区..."
+        totalPurchaseAmount:
+          type: number
+          description: 総購入金額
+          example: 150000
+        purchaseCount:
+          type: integer
+          description: 購入回数
+          example: 5
+        lastPurchaseDate:
+          type: string
+          format: date-time
+          description: 最終購入日
+          example: "2024-01-15T14:30:00Z"
+        createdAt:
+          type: string
+          format: date-time
+          description: 顧客登録日時
+          example: "2024-01-01T09:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: 顧客情報最終更新日時
+          example: "2024-01-15T14:30:00Z"
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: エラーの種類
+          example: "Bad Request"
+        message:
+          type: string
+          description: エラーの詳細メッセージ
+          example: "リクエストパラメータが不正です"
+        code:
+          type: string
+          description: エラーコード
+          example: "INVALID_PARAMETER"
+        details:
+          type: object
+          description: エラーの詳細情報

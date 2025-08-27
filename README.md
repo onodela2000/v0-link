@@ -40,12 +40,56 @@
 
 **[https://v0.dev/chat/projects/DhCOTzxVJ6G](https://v0.dev/chat/projects/DhCOTzxVJ6G)**
 
-## 仕組み
+## アーキテクチャ
 
-1. [v0.dev](https://v0.dev)を使用してプロジェクトを作成・変更
-2. v0インターフェースからチャットをデプロイ
-3. 変更は自動的にこのリポジトリにプッシュされます
-4. Vercelがこのリポジトリから最新版をデプロイします
+```mermaid
+graph TD
+    A[👨‍💻 v0.dev] -->|自動同期| B[📦 GitHub Repository]
+    B -->|ローカル編集| C[💻 Local Development]
+    C -->|npm run build| D[📁 out/ Directory]
+    D -->|アップロード| E[☁️ S3/GCS/Netlify]
+    E -->|配信| F[🌐 Static Website]
+    
+    A2[🎨 v0.dev Chat] -->|プロトタイプ| A
+    C2[⚙️ ローカルカスタマイズ] -->|機能追加| C
+    
+    style A fill:#4f46e5
+    style B fill:#059669
+    style C fill:#dc2626
+    style D fill:#ea580c
+    style E fill:#7c3aed
+    style F fill:#0891b2
+```
+
+### 開発・配信フロー
+
+#### 1️⃣ プロトタイプ作成（v0.dev）
+- [v0.dev](https://v0.dev)でチャット形式でUI作成
+- 自動的にGitHubリポジトリに同期
+
+#### 2️⃣ ローカル開発・カスタマイズ
+- GitHubからクローンしてローカル編集
+- 顧客管理、設定画面などの機能追加
+- TypeScript、shadcn/uiでリッチな機能実装
+
+#### 3️⃣ Static Export ビルド
+```bash
+npm run build  # out/ディレクトリに静的ファイル生成
+```
+
+#### 4️⃣ 静的ホスティング配信
+- **Amazon S3** + CloudFront
+- **Google Cloud Storage** + CDN
+- **Netlify** / **Vercel** (Static Sites)
+- **GitHub Pages**
+- 任意のWebサーバー
+
+### 技術的特徴
+
+- 🚀 **Pre-rendered SPA**: SEO対応 + SPA動作
+- 📦 **Static Export**: サーバー不要、CDN配信最適化
+- 💾 **Client-side Storage**: ローカルストレージでデータ永続化
+- 🔄 **Hot Reload**: v0.dev ↔ ローカル開発の柔軟な切り替え
 
 ## ローカル開発
 

@@ -4,8 +4,12 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "concurrently \"npm run mock\" \"next dev\"",
+    "dev:frontend": "next dev",
+    "generate-api": "openapi-generator-cli generate -i api-spec.yaml -g typescript-fetch -o src/api --additional-properties=typescriptThreePlus=true,supportsES6=true,npmName=@/api,withoutRuntimeChecks=true",
     "lint": "next lint",
+    "mock": "prism mock api-spec.yaml --port 4010",
+    "postinstall": "npm run generate-api",
     "start": "next start"
   },
   "dependencies": {
@@ -61,9 +65,12 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.7.0",
+    "@stoplight/prism-cli": "^5.8.2",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^8.2.2",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
